@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html ng-app="AngularToDo">
+
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+	<script src="js/angular-local-storage.min.js"></script>
+</head>
+<style>
+	.list-group-item {
+		overflow: hidden;
+		position: relative;
+		display: block;
+		padding: 10px 15px;
+		margin-bottom: -1px;
+		background-color: #fff;
+		border: 1px solid #ddd;
+		height: 100;
+	}
+</style>
+
+<body>
+	<div class="container" ng-controller="ToDoController">
+		<div class="row page-header">
+			<h3>To Do</h3>
+		</div>
+		<div class="row">
+			<ul class="list-group">
+				<li class="list-group-item" ng-repeat="todo in arrayList">
+					<span> {{todo.title}}</span>
+					<button class="btn btn-default pull-right" ng-click="removeValue($index,todo)">Remove</button>
+				</li>
+			</ul>
+		</div>
+		<div class="row input-group">
+			<form class="row col-md-12 col-lg-12" name="form" ng-submit="addValue()">
+				<div class="input-group">
+					<input class="form-control" type="text" ng-model="newValue" placeholder="Add Todo" name="newValue" required />
+					<span class="input-group-btn">
+						<button class="btn btn-default col-lg-2" ng-disabled="form.$invalid">Add</button>
+				   </span>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script>
+		var app = angular.module('AngularToDo', ['LocalStorageModule']);
+
+		app.config(function (localStorageServiceProvider) {
+			localStorageServiceProvider
+				.setPrefix('AngularTodo-pate0359')
+			//.setStorageType('sessionStorage')
+			.setNotify(true, true)
+		});
+
+		app.controller('ToDoController', function ($scope, localStorageService) {
+
+			if (localStorageService.isSupported) {
+
+				var todoList = localStorageService.get('todos');
+				if (!todoList) {
+					$scope.arrayList = [{
+							'title': 'item 1'
+						},
+						{
+							'title': 'item 2'
+						},
+						{
+							'title': 'item 3'
+						}];
+
+					//Set local storage
+					localStorageService.set("todos", $scope.arrayList);
+				} else {
+
+					$scope.arrayList = todoList;
+				}
+
+			} else {
+
+				alert("Local Storage not supported");
+			}
+
+			$scope.addValue = function () {
+
+				var item = '{"title":"' + $scope.newValue + '"}';
+				//alert(item);
+				var obj = JSON.parse(item);
+				$scope.arrayList.push(obj);
+				$scope.newValue = "";
+				//Set local storage
+				localStorageService.set("todos", $scope.arrayList);
+			}
+
+			$scope.removeValue = function ($index, item) {
+				//alert("remove");
+				$scope.arrayList.splice($index, 1);
+
+				//Set local storage
+				localStorageService.set("todos", $scope.arrayList);
+			}
+		});
+	</script>
+</body>
+
+</html>
